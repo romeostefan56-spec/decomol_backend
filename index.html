@@ -50,14 +50,15 @@
 </div>
 
 <script>
+    const API_BASE_URL = "https://decomol-api.onrender.com";
+
     // Función para imputar horas a una obra (la que ya tenías)
     async function registrarTarea() {
         const emp = document.getElementById('emp').value;
         const cli = document.getElementById('cli').value;
         const dur = document.getElementById('dur').value;
         const resDiv = document.getElementById('resultado');
-
-        const url = `http://127.0.0.1:8000/api/v1/time/task?employee_code=${emp}&client_code=${cli}&duration_minutes=${dur}`;
+        const url = `https://decomol-api.onrender.com/api/v1/time/task?employee_code=${emp}&client_code=${cli}&duration_minutes=${dur}`;
 
         try {
             const response = await fetch(url, { method: 'POST' });
@@ -82,7 +83,7 @@
         const location = "Nave Principal"; // Ubicación por defecto
         const resDiv = document.getElementById('resultado');
 
-        const url = `http://127.0.0.1:8000/api/v1/time/clock?employee_code=${emp}&entry_type=${tipo}&location=${location}`;
+        const url = `https://decomol-api.onrender.com/api/v1/time/clock?employee_code=${emp}&entry_type=${tipo}&location=${location}`;
 
         try {
             const response = await fetch(url, { method: 'POST' });

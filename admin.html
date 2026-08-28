@@ -80,6 +80,8 @@
 </div>
 
 <script>
+    const API_BASE_URL = "https://decomol-api.onrender.com";
+
     // Conectamos con el endpoint de reportes de cliente
     async function cargarObras() {
         const tbody = document.getElementById('tabla-obras');
@@ -87,7 +89,7 @@
 
         // Asumiendo el cliente 5480 para la demostración. 
         // Cambia la URL por la ruta exacta que tengas en tu Swagger para los reportes
-        const url = 'http://127.0.0.1:8000/api/v1/time/report/client/5480'; 
+        const url = `${API_BASE_URL}/api/v1/time/report/client/5480`;
 
         try {
             const response = await fetch(url);
