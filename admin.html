@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>DECOMOL - Panel de Control</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f5; margin: 0; padding: 20px; }
+        .header { background: #343a40; color: white; padding: 15px 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .container { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; min-width: 300px; }
+        h2 { color: #333; font-size: 18px; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background-color: #f8f9fa; color: #555; }
+        .badge-in { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+        .badge-out { background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+        button { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-bottom: 10px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Administración DECOMOL</h1>
+    <span style="font-size: 14px; color: #ccc;">Panel de Control para Supervisores</span>
+</div>
+
+<div class="container">
+    <!-- Tabla de Presencia -->
+    <div class="card">
+        <h2>Control de Presencia en Nave</h2>
+        <button onclick="cargarPresencia()">Actualizar Fichajes</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Empleado</th>
+                    <th>Estado</th>
+                    <th>Ubicación</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-presencia">
+                <!-- Para probar la vista, dejamos unos datos de ejemplo temporalmente -->
+                <tr>
+                    <td>OP-001 (Romeo)</td>
+                    <td><span class="badge-in">ENTRADA</span></td>
+                    <td>Nave Principal</td>
+                </tr>
+                <tr>
+                    <td>OP-002 (Carlos)</td>
+                    <td><span class="badge-out">SALIDA</span></td>
+                    <td>Nave Principal</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tabla de Horas por Obra -->
+    <div class="card">
+        <h2>Horas Imputadas por Cliente</h2>
+        <button onclick="cargarObras()">Actualizar Obras</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código Obra</th>
+                    <th>Empleado</th>
+                    <th>Tiempo (Minutos)</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-obras">
+                <!-- Datos de ejemplo temporalmente -->
+                <tr>
+                    <td><strong>5480</strong></td>
+                    <td>OP-001</td>
+                    <td>120 min</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Conectamos con el endpoint de reportes de cliente
+    async function cargarObras() {
+        const tbody = document.getElementById('tabla-obras');
+        tbody.innerHTML = "<tr><td colspan='3'>Cargando datos desde el servidor...</td></tr>";
+
+        // Asumiendo el cliente 5480 para la demostración. 
+        // Cambia la URL por la ruta exacta que tengas en tu Swagger para los reportes
+        const url = 'http://127.0.0.1:8000/api/v1/time/report/client/5480'; 
+
+        try {
+            const response = await fetch(url);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Limpiamos la tabla
+                tbody.innerHTML = "";
+                
+                // Si tu API devuelve una lista de tareas, las mostramos
+                if (data.tareas && data.tareas.length > 0) {
+                    data.tareas.forEach(tarea => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${data.cliente}</strong></td>
+                                <td>${tarea.empleado}</td>
+                                <td>${tarea.minutos} min</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    // Si devuelve el total acumulado
+                    tbody.innerHTML = `
+                        <tr>
+                            <td><strong>5480</strong></td>
+                            <td>Todos</td>
+                            <td>${data.total_minutos || data.total_hours || '0'} min totales</td>
+                        </tr>
+                    `;
+                }
+            } else {
+                tbody.innerHTML = "<tr><td colspan='3' style='color:red;'>Error al cargar los datos. Revisa si la ruta es correcta.</td></tr>";
+            }
+        } catch (error) {
+            tbody.innerHTML = "<tr><td colspan='3' style='color:red;'>Error de conexión con FastAPI.</td></tr>";
+        }
+    }
+
+    // Dejamos la función de presencia preparada
+    async function cargarPresencia() {
+        alert("Para esta tabla, necesitaremos revisar en tu Swagger (/docs) cómo se llama la ruta exacta que lista los fichajes generales (CLOCK_IN/OUT).");
+    }
+</script>
+
+</body>
+</html>
