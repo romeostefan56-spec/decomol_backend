@@ -18,12 +18,18 @@
         .btn-out:hover { background: #c82333; }
         .btn-task { background: #007bff; margin-top: 20px; }
         .btn-task:hover { background: #0056b3; }
+        #message_box { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); padding: 16px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); color: white; font-weight: bold; z-index: 50; transition: opacity 0.3s ease; }
+        #message_box.hidden { opacity: 0; pointer-events: none; }
+        #message_box.success-message { background: #28a745; }
+        #message_box.error-message { background: #dc3545; }
         #resultado { margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-weight: bold; }
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
+
+<div id="message_box" class="hidden"></div>
 
 <div class="card">
     <h2>DECOMOL</h2>
@@ -55,12 +61,18 @@
 <script>
     const API_BASE_URL = "https://decomol-api.onrender.com";
 
+    function mostrarMensaje(texto, esError) {
+        const box = document.getElementById('message_box');
+        box.textContent = texto;
+        box.className = esError ? "error-message" : "success-message";
+        setTimeout(() => box.classList.add('hidden'), 4000);
+    }
+
     // Función para imputar horas a una obra (la que ya tenías)
     async function registrarTarea() {
         const emp = document.getElementById('emp').value;
         const cli = document.getElementById('cli').value;
         const dur = document.getElementById('dur').value;
-        const resDiv = document.getElementById('resultado');
         const url = `https://decomol-api.onrender.com/api/v1/time/task?employee_code=${emp}&client_code=${cli}&duration_minutes=${dur}`;
 
         try {
@@ -68,15 +80,12 @@
             const data = await response.json();
 
             if (response.ok) {
-                resDiv.className = "success";
-                resDiv.innerText = "¡Guardado! " + data.pantalla_trabajador;
+                mostrarMensaje("¡Guardado! " + data.pantalla_trabajador, false);
             } else {
-                resDiv.className = "error";
-                resDiv.innerText = "Error: " + (data.detail || "No se pudo registrar");
+                mostrarMensaje(data.detail || "No se pudo registrar", true);
             }
         } catch (error) {
-            resDiv.className = "error";
-            resDiv.innerText = "Error de conexión con el servidor";
+            mostrarMensaje("Error de conexión con el servidor", true);
         }
     }
 
@@ -84,7 +93,6 @@
     async function ficharPresencia(action) {
         const emp = document.getElementById('emp').value;
         const pass = document.getElementById('emp_password').value;
-        const resDiv = document.getElementById('resultado');
 
         const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&action=${action}&password=${pass}`;
 
@@ -93,15 +101,12 @@
             const data = await response.json();
 
             if (response.ok) {
-                resDiv.className = "success";
-                resDiv.innerText = data.mensaje;
+                mostrarMensaje(data.mensaje || "¡Fichaje registrado correctamente!", false);
             } else {
-                resDiv.className = "error";
-                resDiv.innerText = "Error: " + (data.detail || "No se pudo fichar");
+                mostrarMensaje(data.detail || "Error al fichar. Revisa tu clave.", true);
             }
         } catch (error) {
-            resDiv.className = "error";
-            resDiv.innerText = "Error de conexión con el servidor";
+            mostrarMensaje("Error de conexión con el servidor", true);
         }
     }
 </script>

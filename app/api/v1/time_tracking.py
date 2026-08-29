@@ -108,6 +108,10 @@ def get_employee_history(employee_code: str, db: Session = Depends(get_db)):
         "fichajes": fichajes
     }
 
+@router.get("/entries")
+def get_all_entries(db: Session = Depends(get_db)):
+    return db.query(TimeEntry).order_by(TimeEntry.timestamp.desc()).limit(50).all()
+
 @router.get("/history")
 def get_history(db: Session = Depends(get_db)):
     fichajes = db.query(TimeEntry).all()
