@@ -31,6 +31,9 @@
     <label for="emp">Código Empleado:</label>
     <input type="text" id="emp" value="OP-001">
 
+    <label for="emp_password">Contraseña:</label>
+    <input type="password" id="emp_password" placeholder="Tu contraseña personal">
+
     <h3>Fichaje General (Nave)</h3>
     <div class="row">
         <button class="btn-in" onclick="ficharPresencia('CLOCK_IN')">Fichar Entrada</button>
@@ -78,12 +81,12 @@
     }
 
     // Nueva función para el fichaje general (CLOCK_IN / CLOCK_OUT)
-    async function ficharPresencia(tipo) {
+    async function ficharPresencia(action) {
         const emp = document.getElementById('emp').value;
-        const location = "Nave Principal"; // Ubicación por defecto
+        const pass = document.getElementById('emp_password').value;
         const resDiv = document.getElementById('resultado');
 
-        const url = `https://decomol-api.onrender.com/api/v1/time/clock?employee_code=${emp}&entry_type=${tipo}&location=${location}`;
+        const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&action=${action}&password=${pass}`;
 
         try {
             const response = await fetch(url, { method: 'POST' });

@@ -7,7 +7,13 @@ from app.models.user import User
 router = APIRouter()
 
 @router.post("/create")
-def create_user(employee_code: str, full_name: str, role: str = "Worker", db: Session = Depends(get_db)):
+def create_user(
+    employee_code: str,
+    full_name: str,
+    password: str,
+    role: str = "Worker",
+    db: Session = Depends(get_db)
+):
     """Da de alta a un nuevo empleado en la base de datos de Decomol"""
 
     if db.query(User).filter(User.employee_code == employee_code).first():
@@ -16,6 +22,7 @@ def create_user(employee_code: str, full_name: str, role: str = "Worker", db: Se
     nuevo_empleado = User(
         employee_code=employee_code,
         full_name=full_name,
+        password=password,
         hashed_password="password_falsa_por_ahora",
         role=role
     )

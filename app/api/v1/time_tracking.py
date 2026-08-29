@@ -8,18 +8,24 @@ from app.models.user import User
 router = APIRouter()
 
 @router.post("/clock")
-def clock_in_out(employee_code: str, entry_type: str, location: str, db: Session = Depends(get_db)):
+def clock_in_out(
+    employee_code: str,
+    action: str,
+    password: str,
+    location: str = "Nave Principal",
+    db: Session = Depends(get_db)
+):
     """Registra la entrada (CLOCK_IN) o salida (CLOCK_OUT) general del trabajador"""
 
     empleado = db.query(User).filter(User.employee_code == employee_code).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+    if not empleado or empleado.password != password:
+        raise HTTPException(status_code=401, detail="Error: Contraseña incorrecta o empleado no encontrado")
 
     # Validamos que el tipo de fichaje sea correcto
-    if entry_type not in ["CLOCK_IN", "CLOCK_OUT"]:
+    if action not in ["CLOCK_IN", "CLOCK_OUT"]:
         raise HTTPException(status_code=400, detail="El tipo de fichaje debe ser CLOCK_IN o CLOCK_OUT")
 
-    tipo_enum = EntryType.CLOCK_IN if entry_type == "CLOCK_IN" else EntryType.CLOCK_OUT
+    tipo_enum = EntryType.CLOCK_IN if action == "CLOCK_IN" else EntryType.CLOCK_OUT
 
     nuevo_fichaje = TimeEntry(
         user_id=empleado.id,
@@ -29,7 +35,7 @@ def clock_in_out(employee_code: str, entry_type: str, location: str, db: Session
     db.add(nuevo_fichaje)
     db.commit()
 
-    accion = "Entrada" if entry_type == "CLOCK_IN" else "Salida"
+    accion = "Entrada" if action == "CLOCK_IN" else "Salida"
     return {
         "estado": "Registrado",
         "mensaje": f"¡{accion} correcta! {empleado.full_name} ha fichado en {location}"
