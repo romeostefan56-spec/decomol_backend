@@ -145,3 +145,42 @@ def get_employee_total_hours(employee_code: str, db: Session = Depends(get_db)):
         "total_minutos": total_minutos,
         "total_horas": round(total_horas, 2) # Redondeamos a 2 decimales (ej: 2.5 horas)
     }
+# Estas son las herramientas nuevas que necesita el robot para fabricar archivos
+import csv
+import io
+from fastapi import Response
+
+@router.get("/export/excel")
+def exportar_horas_excel(db: Session = Depends(get_db)):
+    """ADMIN: Descarga un archivo Excel (CSV) con el total de horas de todos los empleados"""
+    
+    # PASO 1: El robot junta a todos los empleados de la base de datos
+    empleados = db.query(User).all()
+    
+    # PASO 2: El robot saca un papel en blanco virtual (StringIO)
+    salida = io.StringIO()
+    escritor = csv.writer(salida)
+    
+    # PASO 3: Escribe los títulos de las columnas arriba del todo
+    escritor.writerow(["Codigo Empleado", "Nombre", "Horas Totales Trabajadas"])
+    
+    # PASO 4: El robot revisa a cada empleado uno por uno
+    for emp in empleados:
+        # Busca los fichajes de tareas de este empleado
+        fichajes = db.query(TimeEntry).filter(
+            TimeEntry.user_id == emp.id,
+            TimeEntry.entry_type == EntryType.TASK
+        ).all()
+        
+        # Suma los minutos y los convierte a horas
+        total_minutos = sum([f.duration_minutes for f in fichajes if f.duration_minutes])
+        total_horas = round(total_minutos / 60, 2)
+        
+        # Escribe una nueva fila en el Excel con los datos de este empleado
+        escritor.writerow([emp.employee_code, emp.full_name, total_horas])
+        
+    # PASO 5: El robot empaqueta el papel y te lo envía como un archivo descargable
+    return Response(
+        content=salida.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=informe_horas_decomol.csv"}
