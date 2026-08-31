@@ -2,109 +2,210 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>DECOMOL - Fichaje Rápido</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECOMOL - Fichaje</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; }
-        h2 { text-align: center; color: #333; margin-bottom: 5px; }
-        h3 { text-align: center; color: #666; font-size: 14px; margin-top: 20px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #555; font-size: 14px; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; color: white; border: none; padding: 12px; margin-top: 10px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .row { display: flex; gap: 10px; margin-top: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f5;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            text-align: center;
+        }
+        button {
+            width: 100%;
+            color: white;
+            border: none;
+            padding: 14px;
+            margin-top: 15px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
         .btn-in { background: #28a745; }
         .btn-in:hover { background: #218838; }
         .btn-out { background: #dc3545; }
         .btn-out:hover { background: #c82333; }
-        .btn-task { background: #007bff; margin-top: 20px; }
+        .btn-task { background: #007bff; }
         .btn-task:hover { background: #0056b3; }
-        #message_box { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); padding: 16px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); color: white; font-weight: bold; z-index: 50; transition: opacity 0.3s ease; }
-        #message_box.hidden { opacity: 0; pointer-events: none; }
-        #message_box.success-message { background: #28a745; }
-        #message_box.error-message { background: #dc3545; }
-        #resultado { margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-weight: bold; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .crono {
+            display: none;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 15px;
+            color: #dc3545;
+            font-weight: bold;
+            background: #ffeeba;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        #resultado {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block !important;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block !important;
+        }
     </style>
 </head>
-<body>
+<body onload="revisarMemoria()">
 
-<div id="message_box" class="hidden"></div>
-
-<div class="card">
-    <h2>DECOMOL</h2>
-    
-    <label for="emp">Código Empleado:</label>
-    <input type="text" id="emp" value="OP-001">
-
-    <label for="emp_password">Contraseña (solo fichaje):</label>
-    <input type="password" id="emp_password" placeholder="Solo para entrada/salida">
-    <small style="display:block; margin-top: 6px; color:#666; font-size:12px;">No se usa para la tarea de obra.</small>
-
-    <h3>Fichaje General (Nave)</h3>
-    <div class="row">
-        <button class="btn-in" onclick="ficharPresencia('CLOCK_IN')">Fichar Entrada</button>
-        <button class="btn-out" onclick="ficharPresencia('CLOCK_OUT')">Fichar Salida</button>
+    <div class="card" style="padding-bottom: 15px;">
+        <label for="emp">👷 Tu Código de Empleado:</label>
+        <input type="text" id="emp" placeholder="Ej: OP-001">
     </div>
 
-    <h3>Imputación por Obra</h3>
-    <div style="margin-top: 8px; color: #666; font-size: 12px; text-align: center;">Sin contraseña • solo cronómetro</div>
-    <label for="cli">Código Cliente / Obra:</label>
-    <input type="text" id="cli" placeholder="Ej: 5480">
+    <div class="card">
+        <h2>🏭 Fichaje de Taller</h2>
 
-    <div id="cronometro" style="display: none; font-size: 16px; text-align: center; margin-top: 10px; color: #dc3545; font-weight: bold;">
-        ⏱️ Cronómetro en marcha...
+        <label for="pass">🔑 Tu Contraseña secreta:</label>
+        <input type="password" id="pass" placeholder="Pon tu clave aquí">
+
+        <div class="row">
+            <button class="btn-in" onclick="ficharTaller('CLOCK_IN')">🟢 Entrar Taller</button>
+            <button class="btn-out" onclick="ficharTaller('CLOCK_OUT')">🔴 Salir Taller</button>
+        </div>
     </div>
 
-    <button id="btn-accion-obra" class="btn-task" onclick="toggleTarea()">▶️ Empezar Tarea de Obra</button>
+    <div class="card">
+        <h2>🏗️ Tareas de Obra</h2>
+        <p style="font-size: 12px; color: #666; text-align: center; margin-top: 0;">(No necesitas contraseña para cambiar de obra)</p>
 
-    <div id="resultado"></div>
-</div>
+        <label for="cli">Código de la Obra:</label>
+        <input type="text" id="cli" placeholder="Ej: 5480">
+
+        <div id="cronometro" class="crono">⏱️ Cronómetro en marcha...</div>
+
+        <button id="btn-empezar" class="btn-task" onclick="empezarObra()">▶️ Empezar Obra</button>
+        <button id="btn-terminar" class="btn-out" style="display: none;" onclick="terminarObra()">⏹️ Terminar Obra</button>
+    </div>
+
+    <div id="resultado" style="width: 100%; max-width: 350px;"></div>
 
 <script>
     const API_BASE_URL = "https://decomol-api.onrender.com";
 
-    function mostrarMensaje(texto, esError) {
-        const box = document.getElementById('message_box');
-        box.textContent = texto;
-        box.className = '';
-        box.classList.add(esError ? 'error-message' : 'success-message');
-        box.classList.remove('hidden');
-        setTimeout(() => box.classList.add('hidden'), 4000);
+    function mostrarMensaje(texto, tipo) {
+        const resDiv = document.getElementById('resultado');
+        resDiv.className = tipo;
+        resDiv.innerText = texto;
+        resDiv.style.display = 'block';
+        setTimeout(() => { resDiv.style.display = 'none'; }, 5000);
     }
 
-    async function toggleTarea() {
-        const btn = document.getElementById('btn-accion-obra');
-        const crono = document.getElementById('cronometro');
-        const cliInput = document.getElementById('cli');
+    async function ficharTaller(tipo) {
         const emp = document.getElementById('emp').value;
-        const resDiv = document.getElementById('resultado');
+        const pass = document.getElementById('pass').value;
+
+        if (!emp || !pass) {
+            return mostrarMensaje('⚠️ Pon tu código y contraseña para el Taller.', 'error');
+        }
+
+        const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&action=${tipo}&location=Taller&password=${pass}`;
+
+        try {
+            const response = await fetch(url, { method: 'POST' });
+            const data = await response.json();
+
+            if (response.ok) {
+                mostrarMensaje(data.mensaje, 'success');
+                document.getElementById('pass').value = '';
+            } else {
+                mostrarMensaje('Error: ' + (data.detail || 'Contraseña incorrecta'), 'error');
+            }
+        } catch (error) {
+            mostrarMensaje('Error de conexión.', 'error');
+        }
+    }
+
+    function empezarObra() {
+        const emp = document.getElementById('emp').value;
+        const cli = document.getElementById('cli').value;
+
+        if (!emp || !cli) {
+            return mostrarMensaje('⚠️ Faltan datos del empleado u obra.', 'error');
+        }
+
+        const datosTarea = { obra: cli, horaInicio: Date.now() };
+        localStorage.setItem('tarea_activa', JSON.stringify(datosTarea));
+
+        activarModoTrabajando(cli);
+        mostrarMensaje('¡Cronómetro iniciado!', 'success');
+    }
+
+    async function terminarObra() {
+        const emp = document.getElementById('emp').value;
+        if (!emp) {
+            return mostrarMensaje('⚠️ Pon tu código de empleado.', 'error');
+        }
 
         let tareaActiva = localStorage.getItem('tarea_activa');
-
-        if (!tareaActiva) {
-            const cli = cliInput.value.trim();
-            if (!cli) {
-                resDiv.className = 'error';
-                resDiv.innerText = '⚠️ Escribe la obra en la que vas a empezar.';
-                return;
-            }
-
-            const datosTarea = { obra: cli, horaInicio: Date.now() };
-            localStorage.setItem('tarea_activa', JSON.stringify(datosTarea));
-
-            cliInput.disabled = true;
-            crono.style.display = 'block';
-            crono.innerText = `⏱️ Trabajando en la obra ${cli}...`;
-            btn.innerHTML = '⏹️ Terminar Tarea de Obra';
-            btn.style.backgroundColor = '#dc3545';
-            resDiv.className = 'success';
-            resDiv.innerText = '¡Cronómetro iniciado!';
-            return;
-        }
+        if (!tareaActiva) return;
 
         const datosGuardados = JSON.parse(tareaActiva);
         const ahora = Date.now();
+
         let minutosCalculados = Math.round((ahora - datosGuardados.horaInicio) / 60000);
         if (minutosCalculados < 1) minutosCalculados = 1;
 
@@ -115,42 +216,38 @@
             const data = await response.json();
 
             if (response.ok) {
-                resDiv.className = 'success';
-                resDiv.innerText = `¡Genial! Has sumado ${minutosCalculados} min a la obra ${datosGuardados.obra}.`;
-
+                mostrarMensaje(`¡Anotados ${minutosCalculados} min a la obra ${datosGuardados.obra}!`, 'success');
                 localStorage.removeItem('tarea_activa');
-                cliInput.disabled = false;
-                cliInput.value = '';
-                crono.style.display = 'none';
-                btn.innerHTML = '▶️ Empezar Tarea de Obra';
-                btn.style.backgroundColor = '#007bff';
+                desactivarModoTrabajando();
             } else {
-                resDiv.className = 'error';
-                resDiv.innerText = 'Error: ' + (data.detail || 'No se pudo registrar');
+                mostrarMensaje('Error: ' + (data.detail || 'No se pudo registrar'), 'error');
             }
         } catch (error) {
-            resDiv.className = 'error';
-            resDiv.innerText = 'Error de conexión con el servidor.';
+            mostrarMensaje('Error de conexión.', 'error');
         }
     }
 
-    async function ficharPresencia(action) {
-        const emp = document.getElementById('emp').value;
-        const pass = document.getElementById('emp_password').value;
+    function activarModoTrabajando(obra) {
+        document.getElementById('cli').value = obra;
+        document.getElementById('cli').disabled = true;
+        document.getElementById('btn-empezar').style.display = 'none';
+        document.getElementById('btn-terminar').style.display = 'block';
+        document.getElementById('cronometro').style.display = 'block';
+    }
 
-        const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&action=${action}&password=${pass}`;
+    function desactivarModoTrabajando() {
+        document.getElementById('cli').value = '';
+        document.getElementById('cli').disabled = false;
+        document.getElementById('btn-empezar').style.display = 'block';
+        document.getElementById('btn-terminar').style.display = 'none';
+        document.getElementById('cronometro').style.display = 'none';
+    }
 
-        try {
-            const response = await fetch(url, { method: 'POST' });
-            const data = await response.json();
-
-            if (response.ok) {
-                mostrarMensaje(data.mensaje || '¡Fichaje registrado correctamente!', false);
-            } else {
-                mostrarMensaje(data.detail || 'Error al fichar. Revisa tu clave.', true);
-            }
-        } catch (error) {
-            mostrarMensaje('Error de conexión con el servidor', true);
+    function revisarMemoria() {
+        let tareaActiva = localStorage.getItem('tarea_activa');
+        if (tareaActiva) {
+            const datosGuardados = JSON.parse(tareaActiva);
+            activarModoTrabajando(datosGuardados.obra);
         }
     }
 </script>
