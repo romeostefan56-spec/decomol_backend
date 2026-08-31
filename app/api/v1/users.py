@@ -14,7 +14,7 @@ def create_user(
     role: str = "Worker",
     db: Session = Depends(get_db)
 ):
-    """Da de alta a un nuevo empleado en la base de datos de Decomol"""
+    """Da de alta a un nuevo empleado en la base de datos de NexusMold CLoud"""
 
     if db.query(User).filter(User.employee_code == employee_code).first():
         raise HTTPException(status_code=400, detail=f"El empleado con código '{employee_code}' ya existe")

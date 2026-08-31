@@ -199,5 +199,5 @@ def exportar_horas_excel(db: Session = Depends(get_db)):
     return Response(
         content=salida.getvalue(),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=informe_horas_decomol.csv"},
+        headers={"Content-Disposition": "attachment; filename=informe_horas_nexusmold_cloud.csv"},
     )

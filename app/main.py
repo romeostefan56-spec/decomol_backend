@@ -7,7 +7,7 @@ from app.models import time_entry, user, project
 # Esto crea la base de datos y TODAS las tablas automáticamente
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Decomol SaaS API")
+app = FastAPI(title="NexusMold CLoud SaaS API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,4 +24,4 @@ app.include_router(projects.router, prefix="/api/v1/projects", tags=["Proyectos 
 
 @app.get("/")
 def read_root():
-    return {"mensaje": "¡El motor de Decomol está encendido y funcionando!"}
+    return {"mensaje": "¡El motor de NexusMold CLoud está encendido y funcionando!"}
