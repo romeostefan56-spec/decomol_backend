@@ -48,12 +48,13 @@
 
     <h3>Imputación por Obra</h3>
     <label for="cli">Código Cliente / Obra:</label>
-    <input type="text" id="cli" value="5480">
+    <input type="text" id="cli" placeholder="Ej: 5480">
 
-    <label for="dur">Minutos trabajados:</label>
-    <input type="number" id="dur" value="120">
+    <div id="cronometro" style="display: none; font-size: 16px; text-align: center; margin-top: 10px; color: #dc3545; font-weight: bold;">
+        ⏱️ Cronómetro en marcha...
+    </div>
 
-    <button class="btn-task" onclick="registrarTarea()">Registrar Tarea de Obra</button>
+    <button id="btn-accion-obra" class="btn-task" onclick="toggleTarea()">▶️ Empezar Tarea de Obra</button>
 
     <div id="resultado"></div>
 </div>
@@ -70,28 +71,67 @@
         setTimeout(() => box.classList.add('hidden'), 4000);
     }
 
-    // Función para imputar horas a una obra (la que ya tenías)
-    async function registrarTarea() {
+    async function toggleTarea() {
+        const btn = document.getElementById('btn-accion-obra');
+        const crono = document.getElementById('cronometro');
+        const cliInput = document.getElementById('cli');
         const emp = document.getElementById('emp').value;
-        const cli = document.getElementById('cli').value;
-        const dur = document.getElementById('dur').value;
-        const url = `${API_BASE_URL}/api/v1/time/task?employee_code=${emp}&client_code=${cli}&duration_minutes=${dur}`;
+        const resDiv = document.getElementById('resultado');
+
+        let tareaActiva = localStorage.getItem('tarea_activa');
+
+        if (!tareaActiva) {
+            const cli = cliInput.value.trim();
+            if (!cli) {
+                resDiv.className = 'error';
+                resDiv.innerText = '⚠️ Escribe la obra en la que vas a empezar.';
+                return;
+            }
+
+            const datosTarea = { obra: cli, horaInicio: Date.now() };
+            localStorage.setItem('tarea_activa', JSON.stringify(datosTarea));
+
+            cliInput.disabled = true;
+            crono.style.display = 'block';
+            crono.innerText = `⏱️ Trabajando en la obra ${cli}...`;
+            btn.innerHTML = '⏹️ Terminar Tarea de Obra';
+            btn.style.backgroundColor = '#dc3545';
+            resDiv.className = 'success';
+            resDiv.innerText = '¡Cronómetro iniciado!';
+            return;
+        }
+
+        const datosGuardados = JSON.parse(tareaActiva);
+        const ahora = Date.now();
+        let minutosCalculados = Math.round((ahora - datosGuardados.horaInicio) / 60000);
+        if (minutosCalculados < 1) minutosCalculados = 1;
+
+        const url = `${API_BASE_URL}/api/v1/time/task?employee_code=${emp}&client_code=${datosGuardados.obra}&duration_minutes=${minutosCalculados}`;
 
         try {
             const response = await fetch(url, { method: 'POST' });
             const data = await response.json();
 
             if (response.ok) {
-                mostrarMensaje("¡Guardado! " + data.pantalla_trabajador, false);
+                resDiv.className = 'success';
+                resDiv.innerText = `¡Genial! Has sumado ${minutosCalculados} min a la obra ${datosGuardados.obra}.`;
+
+                localStorage.removeItem('tarea_activa');
+                cliInput.disabled = false;
+                cliInput.value = '';
+                crono.style.display = 'none';
+                btn.innerHTML = '▶️ Empezar Tarea de Obra';
+                btn.style.backgroundColor = '#007bff';
             } else {
-                mostrarMensaje(data.detail || "No se pudo registrar", true);
+                resDiv.className = 'error';
+                resDiv.innerText = 'Error: ' + (data.detail || 'No se pudo registrar');
             }
         } catch (error) {
-            mostrarMensaje("Error de conexión con el servidor", true);
+            resDiv.className = 'error';
+            resDiv.innerText = 'Error de conexión con el servidor.';
         }
     }
 
-    // Nueva función para el fichaje general (CLOCK_IN / CLOCK_OUT)
     async function ficharPresencia(action) {
         const emp = document.getElementById('emp').value;
         const pass = document.getElementById('emp_password').value;
@@ -103,12 +143,12 @@
             const data = await response.json();
 
             if (response.ok) {
-                mostrarMensaje(data.mensaje || "¡Fichaje registrado correctamente!", false);
+                mostrarMensaje(data.mensaje || '¡Fichaje registrado correctamente!', false);
             } else {
-                mostrarMensaje(data.detail || "Error al fichar. Revisa tu clave.", true);
+                mostrarMensaje(data.detail || 'Error al fichar. Revisa tu clave.', true);
             }
         } catch (error) {
-            mostrarMensaje("Error de conexión con el servidor", true);
+            mostrarMensaje('Error de conexión con el servidor', true);
         }
     }
 </script>
