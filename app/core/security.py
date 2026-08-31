@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.models.time_entry import TimeEntry, EntryType
@@ -7,9 +7,27 @@ import uuid
 
 router = APIRouter()
 
+# Almacén en memoria para pulseras válidas (en producción usar Redis)
+pulseras_validas = {}
+
 
 def crear_pulsera_vip(employee_code: str) -> str:
-    return f"VIP-{employee_code}-{uuid.uuid4().hex[:12].upper()}"
+    pulsera = f"VIP-{employee_code}-{uuid.uuid4().hex[:12].upper()}"
+    pulseras_validas[pulsera] = employee_code
+    return pulsera
+
+
+def validar_pulsera_vip(authorization: str = Header(None)) -> str:
+    """Valida la pulsera VIP desde el header Authorization: Bearer <pulsera>"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Pulsera VIP no proporcionada")
+    
+    pulsera = authorization.replace("Bearer ", "").strip()
+    
+    if pulsera not in pulseras_validas:
+        raise HTTPException(status_code=401, detail="Pulsera VIP inválida o expirada")
+    
+    return pulseras_validas[pulsera]
 
 
 @router.post("/clock")

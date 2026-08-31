@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.models.time_entry import TimeEntry, EntryType
 from app.models.project import Client, Project
 from app.models.user import User
+from app.core.security import validar_pulsera_vip
 
 router = APIRouter()
 
@@ -42,7 +43,22 @@ def clock_in_out(
     }
 
 @router.post("/task")
-def register_task(employee_code: str, client_code: str, duration_minutes: int, db: Session = Depends(get_db)):
+def register_task(
+    employee_code: str,
+    client_code: str,
+    duration_minutes: int,
+    authorization: str = Header(None),
+    db: Session = Depends(get_db)
+):
+    """Registra tarea con pulsera VIP (sin pedir contraseña)"""
+    
+    # Validar la pulsera VIP
+    employee_from_token = validar_pulsera_vip(authorization)
+    
+    # Verificar que la pulsera corresponde al empleado
+    if employee_from_token != employee_code:
+        raise HTTPException(status_code=403, detail="Pulsera no corresponde a este empleado")
+    
     empleado = db.query(User).filter(User.employee_code == employee_code).first()
     if not empleado:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
