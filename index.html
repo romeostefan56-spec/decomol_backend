@@ -162,7 +162,7 @@
             return mostrarMensaje('⚠️ Pon tu código y contraseña para el Taller.', 'error');
         }
 
-        const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&action=${tipo}&location=Taller&password=${pass}`;
+        const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&entry_type=${tipo}&location=Taller&password=${pass}`;
 
         try {
             const response = await fetch(url, { method: 'POST' });
@@ -171,6 +171,10 @@
             if (response.ok) {
                 mostrarMensaje(data.mensaje, 'success');
                 document.getElementById('pass').value = '';
+
+                if (data.token) {
+                    localStorage.setItem('pulsera_vip', data.token);
+                }
             } else {
                 mostrarMensaje('Error: ' + (data.detail || 'Contraseña incorrecta'), 'error');
             }
@@ -209,10 +213,16 @@
         let minutosCalculados = Math.round((ahora - datosGuardados.horaInicio) / 60000);
         if (minutosCalculados < 1) minutosCalculados = 1;
 
+        const pulsera = localStorage.getItem('pulsera_vip');
         const url = `${API_BASE_URL}/api/v1/time/task?employee_code=${emp}&client_code=${datosGuardados.obra}&duration_minutes=${minutosCalculados}`;
 
         try {
-            const response = await fetch(url, { method: 'POST' });
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${pulsera}`
+                }
+            });
             const data = await response.json();
 
             if (response.ok) {
