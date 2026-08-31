@@ -64,7 +64,9 @@
     function mostrarMensaje(texto, esError) {
         const box = document.getElementById('message_box');
         box.textContent = texto;
-        box.className = esError ? "error-message" : "success-message";
+        box.className = '';
+        box.classList.add(esError ? 'error-message' : 'success-message');
+        box.classList.remove('hidden');
         setTimeout(() => box.classList.add('hidden'), 4000);
     }
 
@@ -73,7 +75,7 @@
         const emp = document.getElementById('emp').value;
         const cli = document.getElementById('cli').value;
         const dur = document.getElementById('dur').value;
-        const url = `https://decomol-api.onrender.com/api/v1/time/task?employee_code=${emp}&client_code=${cli}&duration_minutes=${dur}`;
+        const url = `${API_BASE_URL}/api/v1/time/task?employee_code=${emp}&client_code=${cli}&duration_minutes=${dur}`;
 
         try {
             const response = await fetch(url, { method: 'POST' });
