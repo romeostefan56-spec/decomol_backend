@@ -145,3 +145,32 @@ def get_employee_total_hours(employee_code: str, db: Session = Depends(get_db)):
         "total_minutos": total_minutos,
         "total_horas": round(total_horas, 2) # Redondeamos a 2 decimales (ej: 2.5 horas)
     }
+@router.get("/report/employee/{employee_code}")
+def get_employee_total_hours(employee_code: str, db: Session = Depends(get_db)):
+    """Calcula el total de horas trabajadas por un empleado"""
+    
+    # PASO 1: El robot busca al empleado por su código secreto
+    empleado = db.query(User).filter(User.employee_code == employee_code).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # PASO 2: El robot saca de la caja fuerte todos los tickets de trabajo (TASK) de ese empleado
+    fichajes = db.query(TimeEntry).filter(
+        TimeEntry.user_id == empleado.id,
+        TimeEntry.entry_type == EntryType.TASK
+    ).all()
+
+    # PASO 3: El robot suma todos los minutos usando una calculadora mágica
+    total_minutos = sum([f.duration_minutes for f in fichajes if f.duration_minutes])
+    
+    # PASO 4: Como sabemos que una hora tiene 60 minutos, dividimos para sacar las horas
+    total_horas = total_minutos / 60
+
+    # PASO 5: El robot nos entrega un reporte bonito y fácil de leer
+    return {
+        "empleado": empleado.full_name,
+        "codigo": empleado.employee_code,
+        "total_tareas_realizadas": len(fichajes),
+        "total_minutos": total_minutos,
+        "total_horas": round(total_horas, 2) # Redondeamos a 2 decimales (ej: 2.5 horas)
+    }
