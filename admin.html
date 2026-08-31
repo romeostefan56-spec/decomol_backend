@@ -44,7 +44,10 @@
             <section class="bg-white rounded-xl shadow-md p-6 border border-gray-100 h-full">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-gray-700">Últimos Fichajes (Tiempo Real)</h2>
-                    <button onclick="cargarRegistros()" class="text-blue-600 hover:text-blue-800 flex items-center text-sm font-semibold">Actualizar</button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="cargarRegistros()" class="text-blue-600 hover:text-blue-800 flex items-center text-sm font-semibold">Actualizar</button>
+                        <button onclick="descargarExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold shadow-sm transition">📊 Descargar Excel</button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -136,22 +139,11 @@
             }
         }
 
+        function descargarExcel() {
+            window.open(`${API_BASE_URL}/api/v1/time/export/excel`);
+        }
+
         window.onload = cargarRegistros;
     </script>
 </body>
 </html>
-<!-- PIEZA 1: EL BOTÓN VISUAL -->
-<!-- Abre tu archivo admin.html -->
-<!-- Busca en tu código la parte donde dice "Horas Imputadas por Cliente" y pega este botón verde justo debajo del botón de "Actualizar Obras": -->
-
-<button onclick="descargarExcel()" style="background-color: #28a745; margin-left: 10px;">📊 Descargar Excel de Horas</button>
-
-
-<!-- PIEZA 2: EL TRUCO DE MAGIA (JAVASCRIPT) -->
-<!-- Ve casi al final del todo de tu archivo admin.html, donde tienes las funciones dentro de la etiqueta <script> -->
-<!-- Pega esta nueva función ahí dentro, junto a las demás: -->
-
-function descargarExcel() {
-    // ¡Magia! El botón abre una puerta invisible hacia el robot y se descarga el archivo que fabricamos antes
-    window.open(API_BASE_URL + "/api/v1/time/export/excel");
-}
