@@ -7,6 +7,14 @@ from app.models.user import User
 
 router = APIRouter()
 
+
+@router.get("")
+def list_users(db: Session = Depends(get_db), _: str = Depends(require_admin)):
+    return [
+        {"id": user.id, "employee_code": user.employee_code, "full_name": user.full_name, "role": user.role}
+        for user in db.query(User).order_by(User.employee_code).all()
+    ]
+
 @router.post("/create")
 def create_user(
     employee_code: str,
@@ -57,3 +65,34 @@ def reset_password(
     db_user.hashed_password = hash_password(new_password)
     db.commit()
     return {"message": f"Contraseña actualizada con éxito para el empleado {employee_code}"}
+
+
+@router.put("/{employee_code}")
+def update_user(
+    employee_code: str,
+    full_name: str,
+    role: str = "Worker",
+    _: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if role not in {"Worker", "Admin", "HR"}:
+        raise HTTPException(status_code=400, detail="Rol no válido")
+    db_user = db.query(User).filter(User.employee_code == employee_code).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+    db_user.full_name = full_name.strip()
+    db_user.role = role
+    db.commit()
+    return {"message": f"Empleado {employee_code} actualizado correctamente"}
+
+
+@router.delete("/{employee_code}")
+def delete_user(employee_code: str, _: str = Depends(require_admin), db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.employee_code == employee_code).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+    if db_user.role == "Admin":
+        raise HTTPException(status_code=400, detail="No se puede eliminar un administrador")
+    db.delete(db_user)
+    db.commit()
+    return {"message": f"Empleado {employee_code} eliminado correctamente"}

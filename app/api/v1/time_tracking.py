@@ -152,6 +152,42 @@ def get_history(db: Session = Depends(get_db), _: str = Depends(require_admin)):
     return {"total_fichajes": len(fichajes), "datos": fichajes}
 
 
+@router.put("/task/{entry_id}")
+def update_task(
+    entry_id: int,
+    duration_minutes: int,
+    client_code: str | None = None,
+    _: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    if duration_minutes < 1:
+        raise HTTPException(status_code=400, detail="La duración debe ser mayor que cero")
+    task = db.query(TimeEntry).filter(TimeEntry.id == entry_id, TimeEntry.entry_type == EntryType.TASK).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    if client_code:
+        client = db.query(Client).filter(Client.client_code == client_code).first()
+        if not client:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        project = db.query(Project).filter(Project.client_id == client.id).first()
+        if not project:
+            raise HTTPException(status_code=400, detail="El cliente no tiene obras asociadas")
+        task.project_id = project.id
+    task.duration_minutes = duration_minutes
+    db.commit()
+    return {"mensaje": "Tarea actualizada correctamente"}
+
+
+@router.delete("/task/{entry_id}")
+def delete_task(entry_id: int, _: str = Depends(require_admin), db: Session = Depends(get_db)):
+    task = db.query(TimeEntry).filter(TimeEntry.id == entry_id, TimeEntry.entry_type == EntryType.TASK).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    db.delete(task)
+    db.commit()
+    return {"mensaje": "Tarea eliminada correctamente"}
+
+
 @router.get("/report/employee/{employee_code}")
 def get_employee_total_hours(employee_code: str, db: Session = Depends(get_db), _: str = Depends(require_admin)):
     empleado = db.query(User).filter(User.employee_code == employee_code).first()

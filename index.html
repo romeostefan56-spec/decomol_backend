@@ -80,8 +80,39 @@
                 <input id="new_cli_name" placeholder="Nombre de la obra" class="w-full p-2.5 border rounded-lg mb-3">
                 <button onclick="crearCliente()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-2.5 rounded-lg">Registrar Obra en Sistema</button>
             </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">✏️ Gestionar Empleado</h2>
+                <input id="manage_emp_code" placeholder="Código del empleado" class="w-full p-2.5 border rounded-lg mb-3">
+                <input id="manage_emp_name" placeholder="Nuevo nombre" class="w-full p-2.5 border rounded-lg mb-3">
+                <select id="manage_emp_role" class="w-full p-2.5 border rounded-lg mb-3"><option value="Worker">Operario</option><option value="HR">RRHH</option><option value="Admin">Administrador</option></select>
+                <input id="manage_emp_pass" type="password" placeholder="Nueva contraseña (opcional)" class="w-full p-2.5 border rounded-lg mb-3">
+                <div class="grid grid-cols-2 gap-2"><button onclick="actualizarEmpleado()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-lg">Actualizar</button><button onclick="restablecerPassword()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold p-2 rounded-lg">Restablecer clave</button></div>
+                <button onclick="eliminarEmpleado()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold p-2 rounded-lg mt-2">Eliminar empleado</button>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">✏️ Gestionar Obra / Cliente</h2>
+                <input id="manage_cli_code" placeholder="Código del cliente" class="w-full p-2.5 border rounded-lg mb-3">
+                <input id="manage_cli_name" placeholder="Nuevo nombre" class="w-full p-2.5 border rounded-lg mb-3">
+                <button onclick="actualizarCliente()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-lg">Actualizar cliente</button>
+                <button onclick="eliminarCliente()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold p-2 rounded-lg mt-2">Eliminar cliente y obras</button>
+                <hr class="my-4">
+                <input id="manage_project_id" type="number" placeholder="ID de obra" class="w-full p-2.5 border rounded-lg mb-3">
+                <input id="manage_project_name" placeholder="Nuevo nombre de obra" class="w-full p-2.5 border rounded-lg mb-3">
+                <button onclick="actualizarObra()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-2 rounded-lg">Actualizar obra</button>
+                <button onclick="eliminarObra()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold p-2 rounded-lg mt-2">Eliminar obra</button>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 md:col-span-2">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">📋 Listados de gestión</h2>
+                <div class="grid grid-cols-2 gap-2"><button onclick="cargarEmpleados()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold p-2 rounded-lg">Ver empleados</button><button onclick="cargarClientes()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold p-2 rounded-lg">Ver obras y clientes</button></div>
+                <pre id="lista-admin" class="mt-3 p-3 bg-slate-50 rounded-lg text-xs overflow-x-auto whitespace-pre-wrap">Selecciona un listado.</pre>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 md:col-span-2">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">🧾 Gestionar Tarea Registrada</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3"><input id="manage_task_id" type="number" placeholder="ID de tarea" class="p-2.5 border rounded-lg"><input id="manage_task_minutes" type="number" min="1" placeholder="Minutos" class="p-2.5 border rounded-lg"><input id="manage_task_client" placeholder="Código de obra (opcional)" class="p-2.5 border rounded-lg"></div>
+                <div class="grid grid-cols-2 gap-2 mt-3"><button onclick="actualizarTarea()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold p-2 rounded-lg">Actualizar tarea</button><button onclick="eliminarTarea()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold p-2 rounded-lg">Eliminar tarea</button></div>
+            </div>
             <div class="md:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 overflow-x-auto">
-                <table class="w-full text-sm"><thead><tr class="text-left border-b"><th class="p-2">Fecha</th><th class="p-2">Empleado</th><th class="p-2">Tipo</th><th class="p-2">Obra</th><th class="p-2">Duración</th></tr></thead><tbody id="tabla-registros"></tbody></table>
+                <table class="w-full text-sm"><thead><tr class="text-left border-b"><th class="p-2">ID</th><th class="p-2">Fecha</th><th class="p-2">Empleado</th><th class="p-2">Tipo</th><th class="p-2">Obra</th><th class="p-2">Duración</th></tr></thead><tbody id="tabla-registros"></tbody></table>
             </div>
         </section>
     </main>
@@ -165,8 +196,53 @@
             const params = new URLSearchParams({ client_code: document.getElementById('new_cli_code').value.trim(), name: document.getElementById('new_cli_name').value.trim() });
             try { const response = await adminFetch(`${API_BASE_URL}/api/v1/projects/client?${params}`, { method: 'POST' }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Error al crear obra'); mostrarMensaje(data.mensaje); } catch (error) { mostrarMensaje(error.message, 'error'); }
         }
+        async function adminJson(url, method, values = {}) {
+            const params = new URLSearchParams(values);
+            const response = await adminFetch(`${url}${params.toString() ? `?${params}` : ''}`, { method });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || data.message || data.mensaje || 'Operación no completada');
+            return data;
+        }
+        function adminValue(id) { return document.getElementById(id).value.trim(); }
+        async function actualizarEmpleado() {
+            try { await adminJson(`${API_BASE_URL}/api/v1/users/${encodeURIComponent(adminValue('manage_emp_code'))}`, 'PUT', { full_name: adminValue('manage_emp_name'), role: document.getElementById('manage_emp_role').value }); mostrarMensaje('Empleado actualizado.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function restablecerPassword() {
+            try { await adminJson(`${API_BASE_URL}/api/v1/users/${encodeURIComponent(adminValue('manage_emp_code'))}/reset-password`, 'PUT', { new_password: document.getElementById('manage_emp_pass').value }); mostrarMensaje('Contraseña restablecida.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function eliminarEmpleado() {
+            if (!window.confirm('¿Eliminar este empleado?')) return;
+            try { await adminJson(`${API_BASE_URL}/api/v1/users/${encodeURIComponent(adminValue('manage_emp_code'))}`, 'DELETE'); mostrarMensaje('Empleado eliminado.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function actualizarCliente() {
+            try { await adminJson(`${API_BASE_URL}/api/v1/projects/client/${encodeURIComponent(adminValue('manage_cli_code'))}`, 'PUT', { name: adminValue('manage_cli_name') }); mostrarMensaje('Cliente actualizado.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function eliminarCliente() {
+            if (!window.confirm('¿Eliminar este cliente y todas sus obras?')) return;
+            try { await adminJson(`${API_BASE_URL}/api/v1/projects/client/${encodeURIComponent(adminValue('manage_cli_code'))}`, 'DELETE'); mostrarMensaje('Cliente y obras eliminados.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function actualizarObra() {
+            try { await adminJson(`${API_BASE_URL}/api/v1/projects/project/${adminValue('manage_project_id')}`, 'PUT', { name: adminValue('manage_project_name'), client_code: adminValue('manage_cli_code') }); mostrarMensaje('Obra actualizada.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function eliminarObra() {
+            if (!window.confirm('¿Eliminar esta obra y sus tareas?')) return;
+            try { await adminJson(`${API_BASE_URL}/api/v1/projects/project/${adminValue('manage_project_id')}`, 'DELETE'); mostrarMensaje('Obra eliminada.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function actualizarTarea() {
+            try { await adminJson(`${API_BASE_URL}/api/v1/time/task/${adminValue('manage_task_id')}`, 'PUT', { duration_minutes: adminValue('manage_task_minutes'), client_code: adminValue('manage_task_client') }); mostrarMensaje('Tarea actualizada.'); cargarRegistros(); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function eliminarTarea() {
+            if (!window.confirm('¿Eliminar esta tarea registrada?')) return;
+            try { await adminJson(`${API_BASE_URL}/api/v1/time/task/${adminValue('manage_task_id')}`, 'DELETE'); mostrarMensaje('Tarea eliminada.'); cargarRegistros(); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function cargarEmpleados() {
+            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/users`); const data = await response.json(); document.getElementById('lista-admin').textContent = data.map(user => `${user.employee_code} | ${user.full_name} | ${user.role}`).join('\n') || 'No hay empleados.'; } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function cargarClientes() {
+            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/projects/clients`); const data = await response.json(); document.getElementById('lista-admin').textContent = data.map(client => `${client.client_code} | ${client.name}\n  ${client.projects.map(project => `ID ${project.id}: ${project.name}`).join('\n  ')}`).join('\n') || 'No hay clientes.'; } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
         async function cargarRegistros() {
-            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/time/entries`); const registros = await response.json(); document.getElementById('tabla-registros').innerHTML = registros.map(reg => `<tr class="border-b"><td class="p-2">${new Date(reg.timestamp).toLocaleString('es-ES')}</td><td class="p-2">${reg.employee_code || '-'}</td><td class="p-2">${reg.entry_type}</td><td class="p-2">${reg.project_id || '-'}</td><td class="p-2">${reg.duration_minutes || '-'} min</td></tr>`).join(''); } catch (error) { mostrarMensaje(error.message, 'error'); }
+            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/time/entries`); const registros = await response.json(); document.getElementById('tabla-registros').innerHTML = registros.map(reg => `<tr class="border-b"><td class="p-2">${reg.id}</td><td class="p-2">${new Date(reg.timestamp).toLocaleString('es-ES')}</td><td class="p-2">${reg.employee_code || '-'}</td><td class="p-2">${reg.entry_type}</td><td class="p-2">${reg.project_id || '-'}</td><td class="p-2">${reg.duration_minutes || '-'} min</td></tr>`).join(''); } catch (error) { mostrarMensaje(error.message, 'error'); }
         }
         function descargarExcel() { adminFetch(`${API_BASE_URL}/api/v1/time/export/excel`).then(response => { if (!response.ok) throw new Error('No se pudo descargar el informe'); return response.blob(); }).then(blob => { const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'informe_horas_nexusmold_cloud.csv'; link.click(); }).catch(error => mostrarMensaje(error.message, 'error')); }
         window.onload = () => { const emp = localStorage.getItem('empleado_actual'); if (emp) document.getElementById('emp').value = emp; if (localStorage.getItem('pulsera_vip')) actualizarEstadoVIP(true); const tarea = JSON.parse(localStorage.getItem('tarea_activa') || 'null'); if (tarea) activarModoTrabajando(tarea.obra); };

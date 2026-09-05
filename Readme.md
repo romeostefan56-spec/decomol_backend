@@ -18,7 +18,11 @@ Cronómetro Automático: Sistema inteligente de inicio/fin de tareas que calcula
 
 Gestión de RRHH: Alta de nuevos operarios con generación de contraseñas de acceso.
 
+Gestión administrativa completa: consulta, edición, restablecimiento de contraseña y eliminación de empleados.
+
 Gestión de Proyectos: Creación de nuevas obras/clientes vinculadas a códigos rápidos de 4 cifras.
+
+Las obras y tareas pueden consultarse, editarse y eliminarse desde el panel Admin; las operaciones requieren un token con rol `Admin`.
 
 Informes y Nóminas: Exportación automática de datos a Excel (CSV), calculando el total de horas trabajadas por cada operario listadas para la gestoría.
 

@@ -4,8 +4,18 @@ from sqlalchemy.orm import Session
 from app.core.security import require_admin
 from app.db.base import get_db
 from app.models.project import Client, Project
+from app.models.time_entry import TimeEntry
 
 router = APIRouter()
+
+
+@router.get("/clients")
+def list_clients(db: Session = Depends(get_db), _: str = Depends(require_admin)):
+    return [
+        {"id": client.id, "client_code": client.client_code, "name": client.name,
+         "projects": [{"id": project.id, "name": project.name} for project in client.projects]}
+        for client in db.query(Client).order_by(Client.client_code).all()
+    ]
 
 @router.post("/client")
 def create_client(
@@ -60,3 +70,63 @@ def create_project(
     db.add(nuevo_proyecto)
     db.commit()
     return {"mensaje": f"¡Proyecto '{name}' creado correctamente para el cliente '{cliente.name}'!"}
+
+
+@router.put("/client/{client_code}")
+def update_client(
+    client_code: str,
+    name: str,
+    _: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    client = db.query(Client).filter(Client.client_code == client_code).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    client.name = name.strip()
+    db.commit()
+    return {"mensaje": "Cliente actualizado correctamente"}
+
+
+@router.delete("/client/{client_code}")
+def delete_client(client_code: str, _: str = Depends(require_admin), db: Session = Depends(get_db)):
+    client = db.query(Client).filter(Client.client_code == client_code).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+    for project in list(client.projects):
+        db.query(TimeEntry).filter(TimeEntry.project_id == project.id).delete(synchronize_session=False)
+        db.delete(project)
+    db.delete(client)
+    db.commit()
+    return {"mensaje": "Cliente y sus obras eliminados correctamente"}
+
+
+@router.put("/project/{project_id}")
+def update_project(
+    project_id: int,
+    name: str,
+    client_code: str | None = None,
+    _: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    if client_code:
+        client = db.query(Client).filter(Client.client_code == client_code).first()
+        if not client:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        project.client_id = client.id
+    project.name = name.strip()
+    db.commit()
+    return {"mensaje": "Obra actualizada correctamente"}
+
+
+@router.delete("/project/{project_id}")
+def delete_project(project_id: int, _: str = Depends(require_admin), db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    db.query(TimeEntry).filter(TimeEntry.project_id == project.id).delete(synchronize_session=False)
+    db.delete(project)
+    db.commit()
+    return {"mensaje": "Obra eliminada correctamente"}
