@@ -1,18 +1,31 @@
+import os
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Usamos SQLite (un archivo local) para empezar rápido
-SQLALCHEMY_DATABASE_URL = "sqlite:///./decomol.db" 
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+
+# Render puede entregar el formato antiguo postgres://.
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+if DATABASE_URL:
+    print("Modo nube: usando PostgreSQL configurado en DATABASE_URL")
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+else:
+    print("Modo local: usando SQLite en ./decomol.db")
+    engine = create_engine(
+        "sqlite:///./decomol.db",
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True,
+    )
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Plantilla base para nuestras tablas
 Base = declarative_base()
 
-# Función para que las rutas hablen con la base de datos
+
 def get_db():
     db = SessionLocal()
     try:

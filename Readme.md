@@ -64,7 +64,19 @@ Puedes crear automáticamente el primer administrador definiendo `NEXUS_ADMIN_CO
 Inicia el servidor backend:
 
 uvicorn app.main:app --reload
+(Asegúrate de ajustar la variable API_BASE_URL en los archivos JS para apuntar a 127.0.0.1:8000 si pruebas en local).
 
+☁️ Base de datos PostgreSQL en Render
+
+1. En Render, crea un recurso `PostgreSQL` en el mismo equipo o cuenta que el servicio web.
+2. Elige la región y el plan, y espera a que la base de datos quede disponible.
+3. Abre el servicio Web del backend y entra en `Environment`.
+4. Añade las variables `DATABASE_URL`, `NEXUS_JWT_SECRET`, `NEXUS_ADMIN_CODE`, `NEXUS_ADMIN_PASSWORD` y `NEXUS_CORS_ORIGINS`.
+5. Copia en `DATABASE_URL` la `Internal Database URL` de PostgreSQL cuando el Web Service y la base estén en la misma región. Usa la `External Database URL` solo si conectas desde fuera de Render.
+6. En `NEXUS_CORS_ORIGINS`, indica el dominio real del frontend, por ejemplo `https://tu-usuario.github.io`.
+7. Guarda los cambios y ejecuta un nuevo deploy del servicio Web.
+
+Cuando `DATABASE_URL` existe, el backend usa PostgreSQL automáticamente y crea las tablas al arrancar. Sin esa variable, conserva SQLite para desarrollo local. No subas estas variables ni sus contraseñas al repositorio.
 
 La API estará disponible en http://127.0.0.1:8000/docs (Swagger UI).
 
