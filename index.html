@@ -3,264 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUSMOLD CLOUD - Fichaje</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #eef2f5;
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 350px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-        }
-        h2 {
-            color: #333;
-            margin-top: 0;
-            font-size: 20px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            text-align: center;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #555;
-            font-size: 14px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            text-align: center;
-        }
-        button {
-            width: 100%;
-            color: white;
-            border: none;
-            padding: 14px;
-            margin-top: 15px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .btn-in { background: #28a745; }
-        .btn-in:hover { background: #218838; }
-        .btn-out { background: #dc3545; }
-        .btn-out:hover { background: #c82333; }
-        .btn-task { background: #007bff; }
-        .btn-task:hover { background: #0056b3; }
-
-        .row {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .crono {
-            display: none;
-            font-size: 16px;
-            text-align: center;
-            margin-top: 15px;
-            color: #dc3545;
-            font-weight: bold;
-            background: #ffeeba;
-            padding: 10px;
-            border-radius: 6px;
-        }
-
-        #resultado {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block !important;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block !important;
-        }
-    </style>
+    <title>NexusMold Cloud - Plataforma Integral SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body onload="revisarMemoria()">
-
-    <div class="card" style="padding-bottom: 15px;">
-        <label for="emp">👷 Tu Código de Empleado:</label>
-        <input type="text" id="emp" placeholder="Ej: OP-001">
-    </div>
-
-    <div class="card">
-        <h2>🏭 Fichaje de Taller</h2>
-
-        <label for="pass">🔑 Tu Contraseña secreta:</label>
-        <input type="password" id="pass" placeholder="Pon tu clave aquí">
-
-        <div class="row">
-            <button class="btn-in" onclick="ficharTaller('CLOCK_IN')">🟢 Entrar Taller</button>
-            <button class="btn-out" onclick="ficharTaller('CLOCK_OUT')">🔴 Salir Taller</button>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col items-center p-4 md:p-8">
+    <header class="w-full max-w-4xl bg-slate-900 text-white p-4 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div>
+            <h1 class="text-xl font-bold tracking-wider">🏗️ NexusMold <span class="text-xs bg-blue-600 px-2 py-0.5 rounded-full uppercase">Cloud Pro</span></h1>
+            <p class="text-xs text-slate-400">Control de Presencia, Obras y Gestión Avanzada</p>
         </div>
-    </div>
+        <div class="flex bg-slate-800 p-1 rounded-lg">
+            <button onclick="cambiarVista('worker')" id="nav-worker" class="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white">📱 Fichaje Operarios</button>
+            <button onclick="cambiarVista('admin')" id="nav-admin" class="px-4 py-2 rounded-md text-sm font-medium text-slate-300">📊 Panel Gerencia</button>
+        </div>
+    </header>
 
-    <div class="card">
-        <h2>🏗️ Tareas de Obra</h2>
-        <p style="font-size: 12px; color: #666; text-align: center; margin-top: 0;">(No necesitas contraseña para cambiar de obra)</p>
+    <main id="view-worker" class="w-full max-w-md space-y-6">
+        <section class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-3 mb-4 flex items-center justify-between">
+                <span>🔐 Identificación</span>
+                <span id="badge-vip" class="hidden text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">VIP Activo</span>
+            </h2>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Código de Empleado</label>
+            <input type="text" id="emp" placeholder="Ej: OP-001" class="w-full p-3 border border-slate-300 rounded-lg text-center font-mono text-lg mb-3">
+            <div id="password-section">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña Personal</label>
+                <input type="password" id="pass" placeholder="••••••••" class="w-full p-3 border border-slate-300 rounded-lg text-center font-mono text-lg mb-3">
+                <button onclick="ficharTaller('CLOCK_IN')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3 rounded-lg">🟢 Iniciar Sesión / Fichar Entrada</button>
+            </div>
+            <div id="logout-section" class="hidden">
+                <button onclick="cerrarSesionVIP()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold p-2 rounded-lg text-sm">Cerrar Sesión / Borrar Pulsera VIP</button>
+            </div>
+        </section>
 
-        <label for="cli">Código de la Obra:</label>
-        <input type="text" id="cli" placeholder="Ej: 5480">
+        <section class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-3 mb-4">🏭 Salida de Taller</h2>
+            <button onclick="ficharTaller('CLOCK_OUT')" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-lg">🔴 Fichar Salida Taller</button>
+        </section>
 
-        <div id="cronometro" class="crono">⏱️ Cronómetro en marcha...</div>
+        <section class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-3 mb-1">🏗️ Tareas en Obra</h2>
+            <p class="text-xs text-slate-500 mb-4">Protegido con tu Token VIP</p>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Código de Obra (mín. 4 cifras)</label>
+            <input type="text" id="cli" placeholder="Ej: 5480" class="w-full p-3 border border-slate-300 rounded-lg text-center font-mono text-lg mb-4">
+            <div id="cronometro" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-center font-mono font-bold mb-4">⏱️ Tarea en curso...</div>
+            <button id="btn-empezar" onclick="empezarObra()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-lg">▶️ Empezar Obra</button>
+            <button id="btn-terminar" onclick="terminarObra()" class="hidden w-full bg-rose-600 hover:bg-rose-700 text-white font-bold p-3 rounded-lg">⏹️ Terminar y Enviar Horas</button>
+        </section>
+    </main>
 
-        <button id="btn-empezar" class="btn-task" onclick="empezarObra()">▶️ Empezar Obra</button>
-        <button id="btn-terminar" class="btn-out" style="display: none;" onclick="terminarObra()">⏹️ Terminar Obra</button>
-    </div>
+    <main id="view-admin" class="w-full max-w-4xl hidden space-y-6">
+        <section id="admin-login" class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 max-w-md mx-auto">
+            <h2 class="text-lg font-bold text-slate-900 border-b pb-3 mb-4">🔒 Acceso de Gerencia</h2>
+            <input id="admin-code" type="text" placeholder="Código de administrador" class="w-full p-3 border rounded-lg mb-3">
+            <input id="admin-pass" type="password" placeholder="Contraseña" class="w-full p-3 border rounded-lg mb-3">
+            <button onclick="iniciarSesionAdmin()" class="w-full bg-slate-900 hover:bg-slate-700 text-white font-bold p-3 rounded-lg">Entrar al panel</button>
+        </section>
+        <section id="admin-panel" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">📊 Informes y Nóminas</h2>
+                <button onclick="descargarExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold p-3 rounded-lg">📥 Descargar CSV de horas</button>
+                <button onclick="cargarRegistros()" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold p-3 rounded-lg">🔄 Actualizar fichajes</button>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">👷 Nuevo Empleado</h2>
+                <input id="new_emp_code" placeholder="Código (ej. OP-002)" class="w-full p-2.5 border rounded-lg mb-3">
+                <input id="new_emp_name" placeholder="Nombre completo" class="w-full p-2.5 border rounded-lg mb-3">
+                <input id="new_emp_pass" type="password" placeholder="Contraseña segura" class="w-full p-2.5 border rounded-lg mb-3">
+                <button onclick="crearEmpleado()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-2.5 rounded-lg">Guardar Empleado</button>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 md:col-span-2">
+                <h2 class="text-lg font-bold border-b pb-3 mb-4">🏗️ Crear Nueva Obra / Cliente</h2>
+                <input id="new_cli_code" placeholder="Código (ej. 5481)" class="w-full p-2.5 border rounded-lg mb-3">
+                <input id="new_cli_name" placeholder="Nombre de la obra" class="w-full p-2.5 border rounded-lg mb-3">
+                <button onclick="crearCliente()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-2.5 rounded-lg">Registrar Obra en Sistema</button>
+            </div>
+            <div class="md:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 overflow-x-auto">
+                <table class="w-full text-sm"><thead><tr class="text-left border-b"><th class="p-2">Fecha</th><th class="p-2">Empleado</th><th class="p-2">Tipo</th><th class="p-2">Obra</th><th class="p-2">Duración</th></tr></thead><tbody id="tabla-registros"></tbody></table>
+            </div>
+        </section>
+    </main>
 
-    <div id="resultado" style="width: 100%; max-width: 350px;"></div>
+    <div id="resultado" class="w-full max-w-md mt-4 p-4 rounded-xl text-center font-bold hidden shadow-md"></div>
 
-<script>
-    const API_BASE_URL = "https://decomol-api.onrender.com";
+    <script>
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : 'https://decomol-api.onrender.com';
+        const adminTokenKey = 'nexus_admin_token';
 
-    function mostrarMensaje(texto, tipo) {
-        const resDiv = document.getElementById('resultado');
-        resDiv.className = tipo;
-        resDiv.innerText = texto;
-        resDiv.style.display = 'block';
-        setTimeout(() => { resDiv.style.display = 'none'; }, 5000);
-    }
-
-    async function ficharTaller(tipo) {
-        const emp = document.getElementById('emp').value;
-        const pass = document.getElementById('pass').value;
-
-        if (!emp || !pass) {
-            return mostrarMensaje('⚠️ Pon tu código y contraseña para el Taller.', 'error');
+        function authHeaders(token = localStorage.getItem(adminTokenKey)) {
+            return token ? { Authorization: `Bearer ${token}` } : {};
         }
-
-        const url = `${API_BASE_URL}/api/v1/time/clock?employee_code=${emp}&entry_type=${tipo}&location=Taller&password=${pass}`;
-
-        try {
-            const response = await fetch(url, { method: 'POST' });
-            const data = await response.json();
-
-            if (response.ok) {
-                mostrarMensaje(data.mensaje, 'success');
+        function mostrarMensaje(texto, tipo = 'success') {
+            const res = document.getElementById('resultado');
+            res.className = `w-full max-w-md mt-4 p-4 rounded-xl text-center font-bold shadow-md ${tipo === 'success' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`;
+            res.innerText = texto;
+            res.classList.remove('hidden');
+            setTimeout(() => res.classList.add('hidden'), 5000);
+        }
+        function cambiarVista(vista) {
+            document.getElementById('view-worker').classList.toggle('hidden', vista !== 'worker');
+            document.getElementById('view-admin').classList.toggle('hidden', vista !== 'admin');
+            if (vista === 'admin' && localStorage.getItem(adminTokenKey)) mostrarPanelAdmin();
+        }
+        async function ficharTaller(tipo) {
+            const emp = document.getElementById('emp').value.trim();
+            const pass = document.getElementById('pass').value.trim();
+            const token = localStorage.getItem('pulsera_vip');
+            if (!emp || (!pass && !token)) return mostrarMensaje('⚠️ Introduce tu código y contraseña.', 'error');
+            const params = new URLSearchParams({ employee_code: emp, entry_type: tipo, location: 'Taller' });
+            if (pass) params.set('password', pass);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/time/clock?${params}`, { method: 'POST', headers: token && !pass ? authHeaders(token) : {} });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Credenciales incorrectas');
+                mostrarMensaje(data.mensaje);
                 document.getElementById('pass').value = '';
-
-                if (data.token) {
-                    localStorage.setItem('pulsera_vip', data.token);
-                }
-            } else {
-                mostrarMensaje('Error: ' + (data.detail || 'Contraseña incorrecta'), 'error');
-            }
-        } catch (error) {
-            mostrarMensaje('Error de conexión.', 'error');
+                if (data.token) { localStorage.setItem('pulsera_vip', data.token); localStorage.setItem('empleado_actual', emp); actualizarEstadoVIP(true); }
+            } catch (error) { mostrarMensaje(error.message || 'Error de conexión.', 'error'); }
         }
-    }
-
-    function empezarObra() {
-        const emp = document.getElementById('emp').value;
-        const cli = document.getElementById('cli').value;
-
-        if (!emp || !cli) {
-            return mostrarMensaje('⚠️ Faltan datos del empleado u obra.', 'error');
+        function actualizarEstadoVIP(activo) {
+            document.getElementById('badge-vip').classList.toggle('hidden', !activo);
+            document.getElementById('logout-section').classList.toggle('hidden', !activo);
+            document.getElementById('password-section').classList.toggle('hidden', activo);
         }
-
-        const datosTarea = { obra: cli, horaInicio: Date.now() };
-        localStorage.setItem('tarea_activa', JSON.stringify(datosTarea));
-
-        activarModoTrabajando(cli);
-        mostrarMensaje('¡Cronómetro iniciado!', 'success');
-    }
-
-    async function terminarObra() {
-        const emp = document.getElementById('emp').value;
-        if (!emp) {
-            return mostrarMensaje('⚠️ Pon tu código de empleado.', 'error');
+        function cerrarSesionVIP() { localStorage.removeItem('pulsera_vip'); localStorage.removeItem('empleado_actual'); actualizarEstadoVIP(false); mostrarMensaje('🔒 Sesión cerrada.'); }
+        function empezarObra() {
+            const cli = document.getElementById('cli').value.trim();
+            if (cli.length < 4) return mostrarMensaje('📏 El código debe tener al menos 4 cifras.', 'error');
+            if (!localStorage.getItem('pulsera_vip')) return mostrarMensaje('🔒 Inicia sesión en el Taller primero.', 'error');
+            localStorage.setItem('tarea_activa', JSON.stringify({ obra: cli, horaInicio: Date.now() })); activarModoTrabajando(cli); mostrarMensaje('▶️ Cronómetro iniciado.');
         }
-
-        let tareaActiva = localStorage.getItem('tarea_activa');
-        if (!tareaActiva) return;
-
-        const datosGuardados = JSON.parse(tareaActiva);
-        const ahora = Date.now();
-
-        let minutosCalculados = Math.round((ahora - datosGuardados.horaInicio) / 60000);
-        if (minutosCalculados < 1) minutosCalculados = 1;
-
-        const pulsera = localStorage.getItem('pulsera_vip');
-        const url = `${API_BASE_URL}/api/v1/time/task?employee_code=${emp}&client_code=${datosGuardados.obra}&duration_minutes=${minutosCalculados}`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${pulsera}`
-                }
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                mostrarMensaje(`¡Anotados ${minutosCalculados} min a la obra ${datosGuardados.obra}!`, 'success');
-                localStorage.removeItem('tarea_activa');
-                desactivarModoTrabajando();
-            } else {
-                mostrarMensaje('Error: ' + (data.detail || 'No se pudo registrar'), 'error');
-            }
-        } catch (error) {
-            mostrarMensaje('Error de conexión.', 'error');
+        async function terminarObra() {
+            const emp = document.getElementById('emp').value.trim();
+            const tarea = JSON.parse(localStorage.getItem('tarea_activa') || 'null');
+            const token = localStorage.getItem('pulsera_vip');
+            if (!emp || !tarea || !token) return mostrarMensaje('⚠️ No hay tarea activa o falta la sesión.', 'error');
+            const minutos = Math.max(1, Math.round((Date.now() - tarea.horaInicio) / 60000));
+            const params = new URLSearchParams({ employee_code: emp, client_code: tarea.obra, duration_minutes: minutos });
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/time/task?${params}`, { method: 'POST', headers: authHeaders(token) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'No se pudo registrar');
+                mostrarMensaje(`✅ Anotados ${minutos} min a la obra ${tarea.obra}.`); localStorage.removeItem('tarea_activa'); desactivarModoTrabajando();
+            } catch (error) { mostrarMensaje(error.message, 'error'); if (error.message.includes('Token')) cerrarSesionVIP(); }
         }
-    }
-
-    function activarModoTrabajando(obra) {
-        document.getElementById('cli').value = obra;
-        document.getElementById('cli').disabled = true;
-        document.getElementById('btn-empezar').style.display = 'none';
-        document.getElementById('btn-terminar').style.display = 'block';
-        document.getElementById('cronometro').style.display = 'block';
-    }
-
-    function desactivarModoTrabajando() {
-        document.getElementById('cli').value = '';
-        document.getElementById('cli').disabled = false;
-        document.getElementById('btn-empezar').style.display = 'block';
-        document.getElementById('btn-terminar').style.display = 'none';
-        document.getElementById('cronometro').style.display = 'none';
-    }
-
-    function revisarMemoria() {
-        let tareaActiva = localStorage.getItem('tarea_activa');
-        if (tareaActiva) {
-            const datosGuardados = JSON.parse(tareaActiva);
-            activarModoTrabajando(datosGuardados.obra);
+        function activarModoTrabajando(obra) { document.getElementById('cli').value = obra; document.getElementById('cli').disabled = true; document.getElementById('btn-empezar').classList.add('hidden'); document.getElementById('btn-terminar').classList.remove('hidden'); document.getElementById('cronometro').classList.remove('hidden'); }
+        function desactivarModoTrabajando() { document.getElementById('cli').value = ''; document.getElementById('cli').disabled = false; document.getElementById('btn-empezar').classList.remove('hidden'); document.getElementById('btn-terminar').classList.add('hidden'); document.getElementById('cronometro').classList.add('hidden'); }
+        async function iniciarSesionAdmin() {
+            const params = new URLSearchParams({ employee_code: document.getElementById('admin-code').value.trim(), password: document.getElementById('admin-pass').value });
+            try { const response = await fetch(`${API_BASE_URL}/api/v1/auth/login?${params}`, { method: 'POST' }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Acceso denegado'); localStorage.setItem(adminTokenKey, data.token); mostrarPanelAdmin(); mostrarMensaje('Acceso administrativo concedido.'); } catch (error) { mostrarMensaje(error.message, 'error'); }
         }
-    }
-</script>
-
+        function mostrarPanelAdmin() { document.getElementById('admin-login').classList.add('hidden'); document.getElementById('admin-panel').classList.remove('hidden'); cargarRegistros(); }
+        async function adminFetch(url, options = {}) { const response = await fetch(url, { ...options, headers: { ...authHeaders(), ...(options.headers || {}) } }); if (response.status === 401 || response.status === 403) { localStorage.removeItem(adminTokenKey); throw new Error('Sesión de administrador inválida o expirada'); } return response; }
+        async function crearEmpleado() {
+            const params = new URLSearchParams({ employee_code: document.getElementById('new_emp_code').value.trim(), full_name: document.getElementById('new_emp_name').value.trim(), password: document.getElementById('new_emp_pass').value });
+            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/users/create?${params}`, { method: 'POST' }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Error al crear empleado'); mostrarMensaje(data.mensaje); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function crearCliente() {
+            const params = new URLSearchParams({ client_code: document.getElementById('new_cli_code').value.trim(), name: document.getElementById('new_cli_name').value.trim() });
+            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/projects/client?${params}`, { method: 'POST' }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Error al crear obra'); mostrarMensaje(data.mensaje); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        async function cargarRegistros() {
+            try { const response = await adminFetch(`${API_BASE_URL}/api/v1/time/entries`); const registros = await response.json(); document.getElementById('tabla-registros').innerHTML = registros.map(reg => `<tr class="border-b"><td class="p-2">${new Date(reg.timestamp).toLocaleString('es-ES')}</td><td class="p-2">${reg.employee_code || '-'}</td><td class="p-2">${reg.entry_type}</td><td class="p-2">${reg.project_id || '-'}</td><td class="p-2">${reg.duration_minutes || '-'} min</td></tr>`).join(''); } catch (error) { mostrarMensaje(error.message, 'error'); }
+        }
+        function descargarExcel() { adminFetch(`${API_BASE_URL}/api/v1/time/export/excel`).then(response => { if (!response.ok) throw new Error('No se pudo descargar el informe'); return response.blob(); }).then(blob => { const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'informe_horas_nexusmold_cloud.csv'; link.click(); }).catch(error => mostrarMensaje(error.message, 'error')); }
+        window.onload = () => { const emp = localStorage.getItem('empleado_actual'); if (emp) document.getElementById('emp').value = emp; if (localStorage.getItem('pulsera_vip')) actualizarEstadoVIP(true); const tarea = JSON.parse(localStorage.getItem('tarea_activa') || 'null'); if (tarea) activarModoTrabajando(tarea.obra); };
+    </script>
 </body>
 </html>

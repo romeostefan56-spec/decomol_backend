@@ -1,67 +1,62 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
-from sqlalchemy.orm import Session
-from app.db.base import get_db
-from app.models.time_entry import TimeEntry, EntryType
-from app.models.user import User
-import uuid
+import os
+from datetime import datetime, timedelta, timezone
 
-router = APIRouter()
+import bcrypt
+from fastapi import Header, HTTPException
+from jose import JWTError, jwt
 
-# Almacén en memoria para pulseras válidas (en producción usar Redis)
-pulseras_validas = {}
+JWT_SECRET = os.getenv("NEXUS_JWT_SECRET", "change-this-secret-in-production")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_HOURS = int(os.getenv("NEXUS_JWT_EXPIRE_HOURS", "11"))
 
 
-def crear_pulsera_vip(employee_code: str) -> str:
-    pulsera = f"VIP-{employee_code}-{uuid.uuid4().hex[:12].upper()}"
-    pulseras_validas[pulsera] = employee_code
-    return pulsera
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_password(password: str, stored_password: str | None, hashed_password: str | None) -> bool:
+    if hashed_password and hashed_password.startswith("$2"):
+        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
+    return bool(stored_password) and password == stored_password
+
+
+def crear_pulsera_vip(employee_code: str, role: str = "Worker") -> str:
+    expires = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE_HOURS)
+    return jwt.encode(
+        {"sub": employee_code, "role": role, "exp": expires},
+        JWT_SECRET,
+        algorithm=JWT_ALGORITHM,
+    )
 
 
 def validar_pulsera_vip(authorization: str = Header(None)) -> str:
-    """Valida la pulsera VIP desde el header Authorization: Bearer <pulsera>"""
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Pulsera VIP no proporcionada")
-    
-    pulsera = authorization.replace("Bearer ", "").strip()
-    
-    if pulsera not in pulseras_validas:
-        raise HTTPException(status_code=401, detail="Pulsera VIP inválida o expirada")
-    
-    return pulseras_validas[pulsera]
+        raise HTTPException(status_code=401, detail="Token VIP no proporcionado")
+    try:
+        payload = jwt.decode(
+            authorization.removeprefix("Bearer ").strip(),
+            JWT_SECRET,
+            algorithms=[JWT_ALGORITHM],
+        )
+        employee_code = payload.get("sub")
+        if not employee_code:
+            raise JWTError
+        return employee_code
+    except JWTError as error:
+        raise HTTPException(status_code=401, detail="Token VIP inválido o expirado") from error
 
 
-@router.post("/clock")
-def clock_in_out(
-    employee_code: str,
-    entry_type: str,
-    location: str,
-    password: str,
-    db: Session = Depends(get_db),
-):
-    """El guardia del Taller. Pide contraseña y reparte pulseras VIP al entrar."""
-
-    empleado = db.query(User).filter(User.employee_code == employee_code).first()
-
-    if not empleado or empleado.password != password:
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
-
-    if entry_type not in ["CLOCK_IN", "CLOCK_OUT"]:
-        raise HTTPException(status_code=400, detail="El tipo de fichaje debe ser CLOCK_IN o CLOCK_OUT")
-
-    tipo_enum = EntryType.CLOCK_IN if entry_type == "CLOCK_IN" else EntryType.CLOCK_OUT
-    nuevo_fichaje = TimeEntry(
-        user_id=empleado.id,
-        entry_type=tipo_enum,
-        location=location,
-    )
-    db.add(nuevo_fichaje)
-    db.commit()
-
-    pulsera = None
-    if entry_type == "CLOCK_IN":
-        pulsera = crear_pulsera_vip(empleado.employee_code)
-
-    return {
-        "mensaje": f"¡Fichaje de {entry_type} correcto!",
-        "token": pulsera,
-    }
+def require_admin(authorization: str = Header(None)) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Autenticación de administrador requerida")
+    try:
+        payload = jwt.decode(
+            authorization.removeprefix("Bearer ").strip(),
+            JWT_SECRET,
+            algorithms=[JWT_ALGORITHM],
+        )
+        if payload.get("role") != "Admin":
+            raise HTTPException(status_code=403, detail="Se requiere rol de administrador")
+        return payload["sub"]
+    except JWTError as error:
+        raise HTTPException(status_code=401, detail="Token de administrador inválido o expirado") from error
